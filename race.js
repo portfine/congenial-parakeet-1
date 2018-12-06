@@ -2,21 +2,35 @@ let app = null;
 
 window.addEventListener("load", function () {
     app = new PIXI.Application({
-        width: 1100,
-        height: 600,
+        width: 1920,
+        height: 1080,
         antialias: true,
         backgroundColor: 0x00FF00
     });
     document.body.appendChild(app.view);
 
     window.stage = app.stage;
-    app.renderer.autoResize = true;
-    app.renderer.resize(window.innerWidth, window.innerHeight);
+    adaptRenderSize();
+    window.addEventListener("resize", adaptRenderSize);
 
     PIXI.loader.add("horse_a", "HorseA.png").add("horse_b", "HorseB.png").load();
 
     PIXI.loader.onComplete.add(drawCanvas);
 });
+
+function adaptRenderSize() {
+    const realWidth = window.innerWidth;
+    const realHeight = window.innerHeight;
+    const referenceWidth = 1920;
+    const aspectRatio = 16 / 9;
+
+    app.renderer.resize(realWidth, realWidth / aspectRatio);
+
+    const scale = realWidth / referenceWidth;
+    const scaleM = new PIXI.Matrix().scale(scale, scale);
+    app.stage.scale.x = scale;
+    app.stage.scale.y = scale;
+}
 
 function drawCanvas() {
     drawRaceComponentsContainer();
@@ -98,6 +112,7 @@ function drawRaceComponentsContainer() {
     raceComponentsContainer.position.set(300, 50);
     window.stage.addChild(raceComponentsContainer);
 }
+
 function drawRaceTrack() {
     window.raceTrackContainer = new PIXI.Container({
         width: 900,

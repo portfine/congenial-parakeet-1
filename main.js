@@ -1,7 +1,6 @@
-
 let app = null;
 
-window.addEventListener("load", function() {
+window.addEventListener("load", function () {
     app = new PIXI.Application({
         width: 800,
         height: 600,
@@ -19,6 +18,7 @@ window.addEventListener("load", function() {
     PIXI.loader.onComplete.add(resources_loaded);
 });
 
+
 function resources_loaded() {
     const horseATex = PIXI.utils.TextureCache["horse_a"];
     const horseBTex = PIXI.utils.TextureCache["horse_b"];
@@ -28,11 +28,8 @@ function resources_loaded() {
 
     console.log("all loaded!");
 
-
-    const twoHorses = new PIXI.Container();
-    
-
-    twoHorses.addChild(horseASprite, horseBSprite);
+    window.horses = [horseASprite, horseBSprite];
+    window.stage = app.stage;
     horseASprite.scale.x = .1;
     horseASprite.scale.y = .1;
     horseBSprite.scale.x = .1;
@@ -40,15 +37,32 @@ function resources_loaded() {
     horseBSprite.position.x = 10;
     horseBSprite.position.y = 20;
 
-    app.stage.addChild(twoHorses);
-    twoHorses.position.x = 200;
-    twoHorses.position.y = 133;
+    define_gamepads();
+}
 
-    PIXI.ticker.shared.add(function(deltaT) {
-        twoHorses.position.x += deltaT * 10;
-        if (twoHorses.position.x > 800) {
-            twoHorses.position.x = 0;
-        }
-        horseASprite.rotation += 0.01 * deltaT;
+function define_gamepads() {
+    window.gamepad = new Gamepad();
+    window.gamepadHorseArray = Array();
+
+    gamepad.bind(Gamepad.Event.CONNECTED, function (device) {
+        // console.log('Connected', device);
+        let horse = window.horses.pop();
+        window.stage.addChild(horse);
+        gamepadHorseArray[device.index] = horse;
     });
+
+    gamepad.bind(Gamepad.Event.BUTTON_DOWN, function (e) {
+        let horse = gamepadHorseArray[e.gamepad.index];
+        horse.position.x += 1;
+    });
+
+    gamepad.bind(Gamepad.Event.DISCONNECTED, function (device) {
+        // console.log('Disconnected', device);
+        let horse = gamepadHorseArray[device.index];
+        horses.push(horse);
+        window.stage.removeChild(horse);
+    });
+
+    console.log("Gamepad defined!");
+    gamepad.init();
 }

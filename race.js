@@ -9,24 +9,27 @@ window.addEventListener("load", function () {
     });
     document.body.appendChild(app.view);
 
-
+    window.stage = app.stage;
     app.renderer.autoResize = true;
     app.renderer.resize(window.innerWidth, window.innerHeight);
 
     PIXI.loader.add("horse_a", "HorseA.png").add("horse_b", "HorseB.png").load();
 
-    PIXI.loader.onComplete.add(resources_loaded);
+    PIXI.loader.onComplete.add(drawCanvas);
 });
 
-function resources_loaded() {
-    define_horses();
-    define_race_track();
-    define_gamepads();
-    define_player_id_box();
-    define_separators();
+function drawCanvas() {
+    drawRaceComponentsContainer();
+    drawHorses();
+    drawRaceTrack();
+    drawPlayerIdBox();
+    drawSeparators();
+    drawTimer();
+
+    defineGamepads();
 }
 
-function define_gamepads() {
+function defineGamepads() {
     window.gamepad = new Gamepad();
     window.gamepadHorseArray = Array();
 
@@ -62,7 +65,7 @@ function define_gamepads() {
     gamepad.init();
 }
 
-function define_horses() {
+function drawHorses() {
     const horseATex = PIXI.utils.TextureCache["horse_a"];
     const horseBTex = PIXI.utils.TextureCache["horse_b"];
 
@@ -72,7 +75,7 @@ function define_horses() {
     console.log("all loaded!");
 
     window.horses = [horseASprite, horseBSprite];
-    window.stage = app.stage;
+
 
     horseASprite.scale.x = .1;
     horseASprite.scale.y = .1;
@@ -85,31 +88,38 @@ function define_horses() {
 
     horseBSprite.position.x = -15;
     horseBSprite.position.y = 133;
-
 }
 
-function define_race_track() {
-    window.race_track_container = new PIXI.Container({
+function drawRaceComponentsContainer() {
+    window.raceComponentsContainer = new PIXI.Container({
+        width: 1100,
+        height: 330
+    });
+    raceComponentsContainer.position.set(300, 50);
+    window.stage.addChild(raceComponentsContainer);
+}
+function drawRaceTrack() {
+    window.raceTrackContainer = new PIXI.Container({
         width: 900,
         height: 200
     });
-    race_track_container.position.x = 200;
+    raceTrackContainer.position.x = 200;
 
-    let race_track_ground = new PIXI.Graphics();
-    race_track_ground.beginFill(0xff8000);
-    race_track_ground.drawPolygon([100, 0, 0,200, 900,200, 1000,0]);
-    race_track_ground.position.set(30, 10);
+    let raceTrackGround = new PIXI.Graphics();
+    raceTrackGround.beginFill(0xff8000);
+    raceTrackGround.drawPolygon([100, 0, 0, 200, 900, 200, 1000, 0]);
+    raceTrackGround.position.set(30, 10);
 
     for (let i = 0; i < 10; i += 1) {
-        race_track_ground.lineStyle(5, 0xeeeeee).moveTo((i+1) * 100, 0).lineTo(i*100, 200);
+        raceTrackGround.lineStyle(5, 0xeeeeee).moveTo((i + 1) * 100, 0).lineTo(i * 100, 200);
     }
 
-    race_track_container.addChild(race_track_ground, horses[0], horses[1]);
-    window.stage.addChild(race_track_container);
+    raceTrackContainer.addChild(raceTrackGround, horses[0], horses[1]);
+    raceComponentsContainer.addChild(raceTrackContainer);
 }
 
-function define_player_id_box() {
-    window.player_ids_container = new PIXI.Container({
+function drawPlayerIdBox() {
+    window.playerIdsContainer = new PIXI.Container({
         width: 200,
         height: 200
     });
@@ -119,17 +129,37 @@ function define_player_id_box() {
     p2Text.position.set(70, 120);
 
 
-    player_ids_container.addChild(p1Text, p2Text);
-    window.stage.addChild(player_ids_container);
+    playerIdsContainer.addChild(p1Text, p2Text);
+    raceComponentsContainer.addChild(playerIdsContainer);
 }
 
-function define_separators() {
-    let race_track_separator = new PIXI.Graphics();
-    race_track_separator.position.set(0, 110);
-    race_track_separator.lineStyle(5, 0x444444).moveTo(0, 0).lineTo(1200, 0);
+function drawSeparators() {
+    let raceTrackSeparator = new PIXI.Graphics();
+    raceTrackSeparator.position.set(0, 110);
+    raceTrackSeparator.lineStyle(5, 0x444444).moveTo(0, 0).lineTo(1200, 0);
 
-    let box_separator = new PIXI.Graphics();
-    box_separator.position.set(250, 0);
-    box_separator.lineStyle(5, 0x444444).moveTo(0, 0).lineTo(-110, 220);
-    window.stage.addChild(race_track_separator, box_separator)
+    let boxSeparator = new PIXI.Graphics();
+    boxSeparator.position.set(250, 0);
+    boxSeparator.lineStyle(5, 0x444444).moveTo(0, 0).lineTo(-110, 220);
+    raceComponentsContainer.addChild(raceTrackSeparator, boxSeparator)
+}
+
+function drawTimer() {
+    window.timerText = new PIXI.Text('Time 0.00', {
+        fontFamily: 'DisposableDroidBB',
+        fontSize: 80,
+        fill: 0x000000,
+        align: 'left'
+    });
+    timerText.position.set(450, 250);
+    raceComponentsContainer.addChild(timerText);
+}
+
+function startTimer() {
+    let startTime = new Date().getTime();
+    window.timerTicker = PIXI.ticker.shared.add(function (deltaT) {
+        let currentTime = new Date().getTime();
+        let time = (currentTime - startTime) / 1000;
+        window.timerText.text = "Time " + time.toFixed(2);
+    });
 }

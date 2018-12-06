@@ -56,6 +56,17 @@ function define_gamepads() {
         horse.position.x += 1;
     });
 
+    gamepad.bind(Gamepad.Event.TICK, function (gamepads) {
+        for (let i = 0; i < gamepads.length; i += 1) {
+            let _gamepad = gamepads[i];
+            let horse = gamepadHorseArray[_gamepad.index];
+            // console.log("axis changed", e);
+            horse.position.x += _gamepad.axes[6];
+            horse.position.y += _gamepad.axes[7];
+        }
+
+    });
+
     gamepad.bind(Gamepad.Event.DISCONNECTED, function (device) {
         // console.log('Disconnected', device);
         let horse = gamepadHorseArray[device.index];

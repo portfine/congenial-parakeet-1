@@ -1,6 +1,7 @@
 let app = null;
 
-window.addEventListener("load", function () {
+$(document).ready(function () {
+// window.addEventListener("load", function () {
     app = new PIXI.Application({
         width: 1920,
         height: 1080,
@@ -13,7 +14,7 @@ window.addEventListener("load", function () {
     adaptRenderSize();
     window.addEventListener("resize", adaptRenderSize);
 
-    PIXI.loader.add("horse_a", "HorseA.png").add("horse_b", "HorseB.png").load();
+    PIXI.loader.add("horse_a", "HorseA.png").add("horse_b", "HorseB.png").add("font", "fonts/DisposableDroidBB.otf").load();
 
     PIXI.loader.onComplete.add(drawCanvas);
 });
@@ -33,6 +34,8 @@ function adaptRenderSize() {
 }
 
 function drawCanvas() {
+
+    $("#loading").hide();
     drawRaceComponentsContainer();
     drawHorses();
     drawRaceTrack();

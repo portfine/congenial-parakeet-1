@@ -4,6 +4,8 @@
 <head>
     <meta charset="utf-8">
     <link rel="stylesheet" href="style.css">
+
+    <script type="text/javascript" src="jquery-3.3.1.min.js"></script>
     <script type="text/javascript" src="pixi.min.js"></script>
     <script type="text/javascript" src="gamepad.min.js"></script>
     <script type="text/javascript" src="race.js"></script>
@@ -18,5 +20,7 @@
     </style>
 </head>
 <body>
+<!--This caches the font before we draw the scene with javascript. It is a hacky way to prevent the no text bug.-->
+<div id="loading">Loading</div>
 </body>
 </html>

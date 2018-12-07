@@ -1,5 +1,14 @@
 let app = null;
 
+
+let allBrainSlices = [['brain_slices/1.png', "brain_slices/2.png", "brain_slices/3.png", "brain_slices/4.png"],
+    ['brain_slices/5.png', "brain_slices/6.png", "brain_slices/7.png", "brain_slices/8.png"],
+    ['brain_slices/9.png', "brain_slices/10.png", "brain_slices/11.png", "brain_slices/12.png"],
+    ['brain_slices/13.png', "brain_slices/14.png", "brain_slices/15.png", "brain_slices/16.png"]];
+
+
+
+
 $(document).ready(function () {
 // window.addEventListener("load", function () {
     app = new PIXI.Application({
@@ -14,8 +23,21 @@ $(document).ready(function () {
     adaptRenderSize();
     window.addEventListener("resize", adaptRenderSize);
 
-    PIXI.loader.add("horse_a", "HorseA.png").add("horse_b", "HorseB.png").add("font", "fonts/DisposableDroidBB.otf").load();
+    let loader = PIXI.loader.add("horse_a", "HorseA.png").add("horse_b", "HorseB.png");
+    for (let brainIdx = 0; brainIdx < allBrainSlices.length; brainIdx++) {
+        for (let sliceIdx = 0; sliceIdx < allBrainSlices[brainIdx].length; sliceIdx++) {
+            loader = loader.add(allBrainSlices[brainIdx][sliceIdx], allBrainSlices[brainIdx][sliceIdx])
+        }
+    }
+    loader.load();
 
+    window.players = [
+        new Player(0, allBrainSlices),
+        new Player(1, allBrainSlices)
+    ];
+
+    players[0].preloadBrainSlices();
+    players[1].preloadBrainSlices();
     PIXI.loader.onComplete.add(drawCanvas);
 });
 
@@ -42,6 +64,7 @@ function drawCanvas() {
     drawPlayerIdBox();
     drawSeparators();
     drawTimer();
+    drawBrainSliders();
 
     defineGamepads();
 }
@@ -52,11 +75,11 @@ function defineGamepads() {
 
     gamepad.bind(Gamepad.Event.CONNECTED, function (device) {
         // console.log('Connected', device);
-        gamepadHorseArray[device.index] = window.horses.pop();
+        players[device.index].horse = window.horses.pop();
     });
 
     gamepad.bind(Gamepad.Event.BUTTON_DOWN, function (e) {
-        let horse = gamepadHorseArray[e.gamepad.index];
+        let horse = players[e.gamepad.index].horse;
         horse.position.x += 1;
     });
 
@@ -64,18 +87,18 @@ function defineGamepads() {
         for (let i = 0; i < gamepads.length; i += 1) {
             let _gamepad = gamepads[i];
 
-            let horse = gamepadHorseArray[_gamepad.index];
+            let horse = players[_gamepad.index].horse;
             horse.position.x += _gamepad.axes[6];
-            // horse.position.y += _gamepad.axes[7];
+            players[_gamepad.index].changeSlice(_gamepad.axes[7]*0.1);
         }
-
     });
 
     gamepad.bind(Gamepad.Event.DISCONNECTED, function (device) {
         // console.log('Disconnected', device);
-        let horse = gamepadHorseArray[device.index];
+        let horse = players[device.index].horse;
         horses.push(horse);
         window.stage.removeChild(horse);
+        players[device.index].horse = null;
     });
 
     console.log("Gamepad defined!");
@@ -171,6 +194,22 @@ function drawTimer() {
     });
     timerText.position.set(450, 250);
     raceComponentsContainer.addChild(timerText);
+}
+
+function drawBrainSliders() {
+    let brainSlidersContainer = new PIXI.Container({
+        width: 1920,
+        height: 600,
+    });
+    brainSlidersContainer.position.set(0, 450);
+    players[0].brainSliceContainer.position.set(350, 0);
+    players[1].brainSliceContainer.position.set(1020, 0);
+    players[0].preloadBrainSlices();
+    players[1].preloadBrainSlices();
+    players[0].moveToNextBrain();
+    players[1].moveToNextBrain();
+    brainSlidersContainer.addChild(players[0].brainSliceContainer, players[1].brainSliceContainer);
+    window.stage.addChild(brainSlidersContainer)
 }
 
 function startTimer() {

@@ -75,7 +75,6 @@ class Player {
         this.currentBrainSliceSpriteHelper %= this.brainSliceSprites.length;
         const newBrainSliceSpriteIndex = Math.floor(this.currentBrainSliceSpriteHelper);
         if (newBrainSliceSpriteIndex !== this.currentBrainSliceSpriteIndex) {
-            console.log(newBrainSliceSpriteIndex);
             this.brainSliceContainer.removeChildren();
             this.currentBrainSliceSpriteIndex = newBrainSliceSpriteIndex;
             return this.brainSliceContainer.addChild(this.brainSliceSprites[newBrainSliceSpriteIndex]);

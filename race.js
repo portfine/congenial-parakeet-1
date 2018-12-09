@@ -36,7 +36,7 @@ $(document).ready(function () {
     ];
 
     players[0].start().preloadBrainSlices();
-    players[1].preloadBrainSlices();
+    players[1].start().preloadBrainSlices();
     PIXI.loader.onComplete.add(drawCanvas);
 });
 

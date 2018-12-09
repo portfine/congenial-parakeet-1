@@ -1,3 +1,20 @@
+
+/** source: https://stackoverflow.com/questions/6274339/how-can-i-shuffle-an-array/6274398
+ * Shuffles array in place.
+ * @param {Array} a items An array containing the items.
+ */
+function shuffle(a) {
+    var j, x, i;
+    for (i = a.length - 1; i > 0; i--) {
+        j = Math.floor(Math.random() * (i + 1));
+        x = a[i];
+        a[i] = a[j];
+        a[j] = x;
+    }
+    return a;
+}
+
+
 class Player {
     constructor(index, allBrainSlices, controller) {
         this.index = index;
@@ -16,6 +33,8 @@ class Player {
             {dir: [-1, 0]},
             {dir: [0, -1]}
         ]);
+
+        this.loader = null;
 
         this.currentBrainSliceSpriteIndex = null;
         this.currentBrainSliceSpriteHelper = 0.2;
@@ -63,28 +82,52 @@ class Player {
     }
 
     preloadBrainSlices() {
+        if (this.loader !== null) {
+            this.loader.destroy();
+            this.loader = null;
+        }
+        
         if (this.brains.length > 0) {
+            this.loader = new PIXI.loaders.Loader();
             let slicesToLoad = this.brains.pop();
             this.preloadedBrainSliceSprites = [];
             for (let sliceIdx = 0; sliceIdx < slicesToLoad.length; sliceIdx++) {
-                let slicePath = slicesToLoad[sliceIdx];
-                const sprite = new PIXI.Sprite(PIXI.Texture.fromImage(slicePath));
-                this.preloadedBrainSliceSprites.push(sprite);
+                this.loader.add(slicesToLoad[sliceIdx]);
             }
+            
+            const spritesList = this.preloadedBrainSliceSprites;
+            this.loader.load((loader, resources) => {
+                for (let sliceIdx = 0; sliceIdx < slicesToLoad.length; sliceIdx++) {
+                    const sprite = new PIXI.Sprite(resources[slicesToLoad[sliceIdx]].texture);
+                    spritesList.push(sprite);
+                }
+            });
         }
     }
 
     moveToNextBrain() {
         let spritesToDestroy = this.brainSliceSprites;
+        
+        if ((this.preloadedBrainSliceSprites !== null) && 
+                (this.loader !== null) && 
+                (this.preloadedBrainSliceSprites.length == 0)) {
+            this.loader.onComplete.add(this.moveToNextBrain.bind(this));
+            return;
+        }
         this.brainSliceSprites = this.preloadedBrainSliceSprites;
+        
+        
         this.preloadBrainSlices();
+        
         this.currentBrainSliceSpriteIndex = null;
         this.currentBrainSliceSpriteHelper = 100;
         this.changeSlice(0);
+        
         while (spritesToDestroy.length > 0) {
             const sprite = spritesToDestroy.pop();
             const texture = sprite.texture;
             sprite.destroy();
+            PIXI.Texture.removeFromCache(texture);
             texture.destroy(true);
         }
     }
@@ -106,18 +149,3 @@ class Player {
     }
 }
 
-
-/** source: https://stackoverflow.com/questions/6274339/how-can-i-shuffle-an-array/6274398
- * Shuffles array in place.
- * @param {Array} a items An array containing the items.
- */
-function shuffle(a) {
-    var j, x, i;
-    for (i = a.length - 1; i > 0; i--) {
-        j = Math.floor(Math.random() * (i + 1));
-        x = a[i];
-        a[i] = a[j];
-        a[j] = x;
-    }
-    return a;
-}

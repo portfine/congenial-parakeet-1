@@ -15,9 +15,9 @@ class Player {
             {dir: [0, 1]},
             {dir: [-1, 0]},
             {dir: [0, -1]}
-        ])
+        ]);
 
-        this.currentBrainSliceSpriteIndex = -1;
+        this.currentBrainSliceSpriteIndex = null;
         this.currentBrainSliceSpriteHelper = 0.2;
 
         this.brainSliceSprites = [];
@@ -27,6 +27,8 @@ class Player {
     }
 
     start() {
+        this.controller.onButtonPressed = this._buttonPressed.bind(this);
+        
         this.ticker = new PIXI.ticker.Ticker();
         this.ticker.add(this._tick.bind(this));
         this.ticker.start();
@@ -54,6 +56,12 @@ class Player {
         }
     }
 
+    _buttonPressed(controller, button) {
+        if (button === Gamepad.StandardButtons[0]) {
+            this.moveToNextBrain();
+        }
+    }
+
     preloadBrainSlices() {
         if (this.brains.length > 0) {
             let slicesToLoad = this.brains.pop();
@@ -70,8 +78,9 @@ class Player {
         let spritesToDestroy = this.brainSliceSprites;
         this.brainSliceSprites = this.preloadedBrainSliceSprites;
         this.preloadBrainSlices();
-        this.currentBrainSliceSpriteHelper = -0.5;
-        this.changeSlice(1);
+        this.currentBrainSliceSpriteIndex = null;
+        this.currentBrainSliceSpriteHelper = 100;
+        this.changeSlice(0);
         while (spritesToDestroy.length > 0) {
             const sprite = spritesToDestroy.pop();
             const texture = sprite.texture;

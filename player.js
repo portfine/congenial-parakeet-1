@@ -1,5 +1,4 @@
 class Player {
-
     constructor(index, allBrainSlices) {
         this.index = index;
         this.brains = shuffle(allBrainSlices.slice());
@@ -40,9 +39,9 @@ class Player {
         }
     }
 
-    changeSlice(direction) {
+    changeSlice(speed) {
         // very hacky implementation to slide between stuff..
-        this.currentBrainSliceSpriteHelper += direction + this.brainSliceSprites.length;
+        this.currentBrainSliceSpriteHelper += speed + this.brainSliceSprites.length;
         this.currentBrainSliceSpriteHelper %= this.brainSliceSprites.length;
         const newBrainSliceSpriteIndex = Math.floor(this.currentBrainSliceSpriteHelper);
         if (newBrainSliceSpriteIndex !== this.currentBrainSliceSpriteIndex) {

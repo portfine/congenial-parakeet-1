@@ -10,7 +10,6 @@ let allBrainSlices = [['brain_slices/1.png', "brain_slices/2.png", "brain_slices
 
 
 $(document).ready(function () {
-// window.addEventListener("load", function () {
     app = new PIXI.Application({
         width: 1920,
         height: 1080,
@@ -56,8 +55,10 @@ function adaptRenderSize() {
 }
 
 function drawCanvas() {
-
     $("#loading").hide();
+    
+    console.log("all loaded!");
+
     drawRaceComponentsContainer();
     drawHorses();
     drawRaceTrack();
@@ -70,39 +71,11 @@ function drawCanvas() {
 }
 
 function defineGamepads() {
-    window.gamepad = new Gamepad();
-    window.gamepadHorseArray = Array();
-
-    gamepad.bind(Gamepad.Event.CONNECTED, function (device) {
-        // console.log('Connected', device);
-        players[device.index].horse = window.horses.pop();
-    });
-
-    gamepad.bind(Gamepad.Event.BUTTON_DOWN, function (e) {
-        let horse = players[e.gamepad.index].horse;
-        horse.position.x += 1;
-    });
-
-    gamepad.bind(Gamepad.Event.TICK, function (gamepads) {
-        for (let i = 0; i < gamepads.length; i += 1) {
-            let _gamepad = gamepads[i];
-
-            let horse = players[_gamepad.index].horse;
-            horse.position.x += _gamepad.axes[6];
-            players[_gamepad.index].changeSlice(_gamepad.axes[7]*0.1);
-        }
-    });
-
-    gamepad.bind(Gamepad.Event.DISCONNECTED, function (device) {
-        // console.log('Disconnected', device);
-        let horse = players[device.index].horse;
-        horses.push(horse);
-        window.stage.removeChild(horse);
-        players[device.index].horse = null;
-    });
-
-    console.log("Gamepad defined!");
-    gamepad.init();
+	let controller = (new Controller(0)).bindEvents();
+	controller.onButtonPressed = function(x, button) {
+		console.log(button);
+	};
+	console.log(controller);
 }
 
 function drawHorses() {
@@ -111,8 +84,6 @@ function drawHorses() {
 
     const horseASprite = new PIXI.Sprite(horseATex);
     const horseBSprite = new PIXI.Sprite(horseBTex);
-
-    console.log("all loaded!");
 
     window.horses = [horseASprite, horseBSprite];
 

@@ -1,12 +1,21 @@
 class Player {
-    constructor(index, allBrainSlices) {
+    constructor(index, allBrainSlices, controller) {
         this.index = index;
+        this.controller = controller;
         this.brains = shuffle(allBrainSlices.slice());
 
         this.brainSliceContainer = new PIXI.Container({
             width: 550,
             height: 550,
         });
+
+        this.controllerTimer = 0;
+        this.controller.filterAnalog(0, .25, [
+            {dir: [1, 0]},
+            {dir: [0, 1]},
+            {dir: [-1, 0]},
+            {dir: [0, -1]}
+        ])
 
         this.currentBrainSliceSpriteIndex = -1;
         this.currentBrainSliceSpriteHelper = 0.2;
@@ -15,6 +24,25 @@ class Player {
         this.preloadedBrainSliceSprites = [];
         this.horse = null;
         this.score = 0.;
+    }
+
+    start() {
+        this.ticker = new PIXI.ticker.Ticker();
+        this.ticker.add(this._tick.bind(this));
+        this.ticker.start();
+        return this;
+    }
+    
+    _tick(deltaT) {
+        const timeDeltaT = deltaT * (1 / 60);
+        this.controllerTimer += timeDeltaT;
+        if (this.controller.state !== null) {
+            const controller = this.controller.state;
+            if (this.controllerTimer > 1) {
+                this.controllerTimer -= 1;
+                console.log(controller.axes[0] + ", " + controller.axes[1]);
+            }
+        }
     }
 
     preloadBrainSlices() {

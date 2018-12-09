@@ -31,11 +31,11 @@ $(document).ready(function () {
     loader.load();
 
     window.players = [
-        new Player(0, allBrainSlices),
-        new Player(1, allBrainSlices)
+        new Player(0, allBrainSlices, (new Controller(0)).bindEvents()),
+        new Player(1, allBrainSlices, (new Controller(1)).bindEvents())
     ];
 
-    players[0].preloadBrainSlices();
+    players[0].start().preloadBrainSlices();
     players[1].preloadBrainSlices();
     PIXI.loader.onComplete.add(drawCanvas);
 });
@@ -66,16 +66,6 @@ function drawCanvas() {
     drawSeparators();
     drawTimer();
     drawBrainSliders();
-
-    defineGamepads();
-}
-
-function defineGamepads() {
-	let controller = (new Controller(0)).bindEvents();
-	controller.onButtonPressed = function(x, button) {
-		console.log(button);
-	};
-	console.log(controller);
 }
 
 function drawHorses() {

@@ -34,11 +34,19 @@ class Player {
     }
     
     _tick(deltaT) {
+        function ramp(x) {
+            if (x == 0) {
+                return 0;
+            }
+            const sign = x > 0 ? 1 : -1;
+            return 150 * Math.pow((Math.abs(x) - .25) / .75, 4) * sign; 
+        }
+        
         const timeDeltaT = deltaT * (1 / 60);
         this.controllerTimer += timeDeltaT;
         if (this.controller.state !== null) {
             const controller = this.controller.state;
-            this.changeSlice(20 * Math.pow(controller.axes[1], 4) * timeDeltaT);
+            this.changeSlice(ramp(controller.axes[1]) * timeDeltaT);
 
             if (this.controllerTimer > 0.05) {
                 this.controllerTimer -= 0.05;
@@ -62,8 +70,8 @@ class Player {
         let spritesToDestroy = this.brainSliceSprites;
         this.brainSliceSprites = this.preloadedBrainSliceSprites;
         this.preloadBrainSlices();
-        this.currentBrainSliceSpriteHelper = 0.5;
-        this.changeSlice(0);
+        this.currentBrainSliceSpriteHelper = -0.5;
+        this.changeSlice(1);
         while (spritesToDestroy.length > 0) {
             const sprite = spritesToDestroy.pop();
             const texture = sprite.texture;
@@ -73,6 +81,10 @@ class Player {
     }
 
     changeSlice(speed) {
+        if (this.brainSliceSprites.length == 0) {
+            return;
+        }
+        
         // very hacky implementation to slide between stuff..
         this.currentBrainSliceSpriteHelper += speed + this.brainSliceSprites.length;
         this.currentBrainSliceSpriteHelper %= this.brainSliceSprites.length;

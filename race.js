@@ -1,14 +1,23 @@
 let app = null;
 
-
+/*
 let allBrainSlices = [
     ['test_slices/1.png', "test_slices/2.png", "test_slices/3.png", "test_slices/4.png"],
     ['test_slices/5.png', "test_slices/6.png", "test_slices/7.png", "test_slices/8.png"],
     ['test_slices/9.png', "test_slices/10.png", "test_slices/11.png", "test_slices/12.png"],
     ['test_slices/13.png', "test_slices/14.png", "test_slices/15.png", "test_slices/16.png"]
 ];
-
-
+*/
+const allBrainSlices = [];
+(function() {
+	for (let i = 1; i <= 100; i++) {
+		const img = [];
+		for (let s = 0; s < 320; s++) {
+			img.push("slices/" + i + "/img_" + s + ".jpg");
+		}
+		allBrainSlices.push(img);
+	}
+})();
 
 
 $(document).ready(function () {

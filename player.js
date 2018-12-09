@@ -38,9 +38,10 @@ class Player {
         this.controllerTimer += timeDeltaT;
         if (this.controller.state !== null) {
             const controller = this.controller.state;
-            if (this.controllerTimer > 1) {
-                this.controllerTimer -= 1;
-                console.log(controller.axes[0] + ", " + controller.axes[1]);
+            this.changeSlice(20 * Math.pow(controller.axes[1], 4) * timeDeltaT);
+
+            if (this.controllerTimer > 0.05) {
+                this.controllerTimer -= 0.05;
             }
         }
     }
@@ -61,7 +62,8 @@ class Player {
         let spritesToDestroy = this.brainSliceSprites;
         this.brainSliceSprites = this.preloadedBrainSliceSprites;
         this.preloadBrainSlices();
-        this.changeSlice(-this.currentBrainSliceSpriteHelper + 0.5);
+        this.currentBrainSliceSpriteHelper = 0.5;
+        this.changeSlice(0);
         while (spritesToDestroy.length > 0) {
             spritesToDestroy.pop().destroy()
         }
@@ -73,6 +75,7 @@ class Player {
         this.currentBrainSliceSpriteHelper %= this.brainSliceSprites.length;
         const newBrainSliceSpriteIndex = Math.floor(this.currentBrainSliceSpriteHelper);
         if (newBrainSliceSpriteIndex !== this.currentBrainSliceSpriteIndex) {
+            console.log(newBrainSliceSpriteIndex);
             this.brainSliceContainer.removeChildren();
             this.currentBrainSliceSpriteIndex = newBrainSliceSpriteIndex;
             return this.brainSliceContainer.addChild(this.brainSliceSprites[newBrainSliceSpriteIndex]);

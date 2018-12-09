@@ -9,11 +9,10 @@ from concurrent.futures import ThreadPoolExecutor
 def convert(imgno):
     img = sitk.ReadImage(f"/media/paul/extra-data/{imgno}/wta.mhd")
 
+    origin = np.array(img.GetOrigin())
     size = np.array(img.GetSize())
     spacing = np.array(img.GetSpacing())
     world_size = size * spacing
-
-    img.SetOrigin(list(-world_size[:2] / 2) + [0])
 
     out_spacing = np.array([.5, .5, 1])
     out_size = np.array([512, 512, 1])
@@ -22,7 +21,7 @@ def convert(imgno):
     rif = sitk.ResampleImageFilter()
     rif.SetOutputSpacing(out_spacing)
     rif.SetSize([int(x) for x in out_size])
-    out_origin = np.array(list(-out_world_size[:2] / 2) + [0])
+    base_out_origin = origin + np.array(list(-out_world_size[:2] / 2) + [0])
 
     wl_center = 200
     wl_width = 500
@@ -33,7 +32,8 @@ def convert(imgno):
 
     for z in range(size[2]):
         print(f"{imgno}: {z+1} / {size[2]}")
-        out_origin[2] = z * out_spacing[2]
+        out_origin = base_out_origin + world_size / 2
+        out_origin[2] += z * spacing[2] - world_size[2] / 2
         rif.SetOutputOrigin(out_origin)
         out_img = rif.Execute(img)
         out_array = sitk.GetArrayFromImage(out_img)[0]        

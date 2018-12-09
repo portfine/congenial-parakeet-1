@@ -52,7 +52,7 @@ class Player {
             this.preloadedBrainSliceSprites = [];
             for (let sliceIdx = 0; sliceIdx < slicesToLoad.length; sliceIdx++) {
                 let slicePath = slicesToLoad[sliceIdx];
-                const sprite = new PIXI.Sprite(PIXI.utils.TextureCache[slicePath]);
+                const sprite = new PIXI.Sprite(PIXI.Texture.fromImage(slicePath));
                 this.preloadedBrainSliceSprites.push(sprite);
             }
         }
@@ -65,7 +65,10 @@ class Player {
         this.currentBrainSliceSpriteHelper = 0.5;
         this.changeSlice(0);
         while (spritesToDestroy.length > 0) {
-            spritesToDestroy.pop().destroy()
+            const sprite = spritesToDestroy.pop();
+            const texture = sprite.texture;
+            sprite.destroy();
+            texture.destroy(true);
         }
     }
 

@@ -1,10 +1,12 @@
 let app = null;
 
 
-let allBrainSlices = [['brain_slices/1.png', "brain_slices/2.png", "brain_slices/3.png", "brain_slices/4.png"],
-    ['brain_slices/5.png', "brain_slices/6.png", "brain_slices/7.png", "brain_slices/8.png"],
-    ['brain_slices/9.png', "brain_slices/10.png", "brain_slices/11.png", "brain_slices/12.png"],
-    ['brain_slices/13.png', "brain_slices/14.png", "brain_slices/15.png", "brain_slices/16.png"]];
+let allBrainSlices = [
+    ['test_slices/1.png', "test_slices/2.png", "test_slices/3.png", "test_slices/4.png"],
+    ['test_slices/5.png', "test_slices/6.png", "test_slices/7.png", "test_slices/8.png"],
+    ['test_slices/9.png', "test_slices/10.png", "test_slices/11.png", "test_slices/12.png"],
+    ['test_slices/13.png', "test_slices/14.png", "test_slices/15.png", "test_slices/16.png"]
+];
 
 
 
@@ -23,11 +25,6 @@ $(document).ready(function () {
     window.addEventListener("resize", adaptRenderSize);
 
     let loader = PIXI.loader.add("horse_a", "HorseA.png").add("horse_b", "HorseB.png");
-    for (let brainIdx = 0; brainIdx < allBrainSlices.length; brainIdx++) {
-        for (let sliceIdx = 0; sliceIdx < allBrainSlices[brainIdx].length; sliceIdx++) {
-            loader = loader.add(allBrainSlices[brainIdx][sliceIdx], allBrainSlices[brainIdx][sliceIdx])
-        }
-    }
     loader.load();
 
     window.players = [
@@ -35,8 +32,8 @@ $(document).ready(function () {
         new Player(1, allBrainSlices, (new Controller(1)).bindEvents())
     ];
 
-    players[0].start().preloadBrainSlices();
-    players[1].start().preloadBrainSlices();
+    players[0].start();
+    players[1].start();
     PIXI.loader.onComplete.add(drawCanvas);
 });
 
@@ -165,10 +162,11 @@ function drawBrainSliders() {
     brainSlidersContainer.position.set(0, 450);
     players[0].brainSliceContainer.position.set(350, 0);
     players[1].brainSliceContainer.position.set(1020, 0);
-    players[0].preloadBrainSlices();
-    players[1].preloadBrainSlices();
-    players[0].moveToNextBrain();
-    players[1].moveToNextBrain();
+    
+    players.forEach(function(p) {
+		p.preloadBrainSlices();
+		p.moveToNextBrain();
+	});
     brainSlidersContainer.addChild(players[0].brainSliceContainer, players[1].brainSliceContainer);
     window.stage.addChild(brainSlidersContainer)
 }

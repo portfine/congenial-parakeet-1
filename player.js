@@ -156,6 +156,14 @@ class Player {
         }
     }
 
+    _applyVolumeLimits() {
+        if (this.volumeSelectionValue > 2100) {
+            this.volumeSelectionValue = 2100;
+        } else if (this.volumeSelectionValue < 900) {
+            this.volumeSelectionValue = 900;
+        }
+    }
+
     moveToNextBrain() {
         let spritesToDestroy = this.brainSliceSprites;
 
@@ -177,6 +185,7 @@ class Player {
         this.currentBrainVolume = this.brainVolumes.pop();
         this.volumeSelectionValue = this.currentBrainVolume +
             Math.floor((Math.random() * 3) - 1) * 100 + ((Math.random() * 50) - 25);
+        this._applyVolumeLimits();
         this.volumeSelectionText.text = this.volumeSelectionValue.toFixed(2);
 
         while (spritesToDestroy.length > 0) {
@@ -216,16 +225,11 @@ class Player {
             return;
         }
         
-        this.volumeSelectionValue += speed;
-        if (this.volumeSelectionValue > 2100) {
-            this.volumeSelectionValue = 2100;
-            speed = null;
-        } else if (this.volumeSelectionValue < 900) {
-            this.volumeSelectionValue = 900;
-            speed = null;
+        if (speed !== 0) {
+            this.volumeSelectionValue += speed;
+            this._applyVolumeLimits();
+            this.volumeSelectionText.text = this.volumeSelectionValue.toFixed(2);
         }
-        if (speed !== 0)
-            this.volumeSelectionText.text = this.volumeSelectionValue.toFixed(2)
     }
 
     makeSelection() {

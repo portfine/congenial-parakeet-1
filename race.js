@@ -1,14 +1,7 @@
 let app = null;
 let gameScene = null;
+let startNewRoundSplash = null;
 
-/*
-let allBrainSlices = [
-    ['test_slices/1.png', "test_slices/2.png", "test_slices/3.png", "test_slices/4.png"],
-    ['test_slices/5.png', "test_slices/6.png", "test_slices/7.png", "test_slices/8.png"],
-    ['test_slices/9.png', "test_slices/10.png", "test_slices/11.png", "test_slices/12.png"],
-    ['test_slices/13.png', "test_slices/14.png", "test_slices/15.png", "test_slices/16.png"]
-];
-*/
 const allBrainSlices = [];
 
 (function () {
@@ -23,6 +16,15 @@ const allBrainSlices = [];
 
 PRECACHE_TEXTURE_LIST.push(["horse_a", "HorseA.png"]);
 PRECACHE_TEXTURE_LIST.push(["horse_b", "HorseB.png"]);
+
+function lookupButton(name) {
+    for (let i = 0; i < Gamepad.StandardButtons.length; i++) {
+        if (name === Gamepad.StandardButtons[i]) {
+            return i;
+        }
+    }
+    return null;
+}
 
 $(document).ready(function () {
     app = new PIXI.Application({
@@ -88,19 +90,24 @@ function preloadPlayers() {
     horseBSprite.position.x = -15;
     horseBSprite.position.y = 133;
 
+    const controllers = [
+        (new Controller(0)).bindEvents(),
+        (new Controller(1)).bindEvents()
+    ];
+
     window.players = [
         (new Player(
             0,
             allBrainSlices,
             brainVolumes,
-            (new Controller(0)).bindEvents(),
+            controllers[0],
             horseASprite)
         ).start(),
         (new Player(
             1,
             allBrainSlices,
             brainVolumes,
-            (new Controller(1)).bindEvents(),
+            controllers[1],
             horseBSprite)
         ).start(),
     ];
@@ -141,6 +148,28 @@ function initializeGame() {
     playerContainer.addChild(players[0].mainSprite, players[1].mainSprite);
     gameScene.addChild(playerContainer);
 
+    startNewRoundSplash = new StartNewRoundSplash().start();
+    startNewRoundSplash.setVisible(true);
+
+    PIXI.ticker.shared.add(testResetGame);
+}
+
+const RESET_BUTTON_INDEX = 7;
+let bothResetButtonsWerePressed = false;
+function testResetGame() {
+    if (players[0].controller.state && players[1].controller.state) {
+        const bothButtonsPressed = players[0].controller.state.buttons[RESET_BUTTON_INDEX].pressed && players[1].controller.state.buttons[RESET_BUTTON_INDEX].pressed;
+        if (!bothResetButtonsWerePressed && bothButtonsPressed) {
+            bothResetButtonsWerePressed = true;
+        } else if (bothResetButtonsWerePressed && !bothButtonsPressed) {
+            bothResetButtonsWerePressed = false;
+            resetGame();
+        }
+    }
+}
+
+function resetGame() {
+    startNewRoundSplash.setVisible(false);
     players.forEach(function (p) {
         p.startRound();
     });

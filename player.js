@@ -46,10 +46,12 @@ class Player {
         this.brainSliceSprites = [];
         this.preloadedBrainSliceSprites = [];
         this.horse = horse;
-        this.score = 0.;
+        
+        this.score = 0.0;
         this.distanceTraveled = 0;
         this.totalChoices = 0;
         this.startTime = null;
+
 
         this.volumeSelectionValue = 1500.;
         this.volumeSelectionText = new PIXI.Text('1500.00', {
@@ -85,6 +87,10 @@ class Player {
     }
 
     startRound() {
+        this.score = 0.0;
+        this.distanceTraveled = 0;
+        this.totalChoices = 0;
+        
         this.finishedSprite.visible = false;
         this.startTime = +new Date();
         this.moveToNextBrain();

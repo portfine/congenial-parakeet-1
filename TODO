@@ -1,7 +1,11 @@
 TODO:
  - Winning condition ✔
- - Reset
+ - Reset ✔
+
+ - Fix the min-max checks when generating new start volumes
  - Loop over dataset multiple times
  - Instructions
  - Login with both controllers
  - Title page
+ - Animate horses
+ - Background

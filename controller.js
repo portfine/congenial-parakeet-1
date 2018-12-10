@@ -101,9 +101,16 @@ class Controller {
                 axes.push(device.axes[ai]);
             }
             
+            const buttons = [];
+            for (let ai = 0; ai < device.buttons.length; ai++) {
+                buttons.push({
+					pressed: device.buttons[ai].pressed
+				});
+            }
+
             this.state = {
                 axes: axes,
-                buttons: device.buttons
+                buttons: buttons
             };
             
             this._applyStateFilters();

@@ -21,7 +21,8 @@ class Player {
         this.index = index;
         this.controller = controller;
 
-        this.shuffleBrains(allBrainSlices, brainVolumes);
+        this.brains = allBrainSlices;
+        this.brainVolumes = brainVolumes;
 
         this.mainSprite = new PIXI.Container();
         this.brainSliceContainer = new PIXI.Container();
@@ -45,6 +46,7 @@ class Player {
         this.currentBrainVolume = null;
         this.brainSliceSprites = [];
         this.preloadedBrainSliceSprites = [];
+        this.preloadedVolume = null;
         this.horse = horse;
         this.horseStart = null;
         
@@ -64,20 +66,9 @@ class Player {
         });
     }
 
-    shuffleBrains(allBrainSlices, brainVolumes) {
-        let zipped = allBrainSlices.map(function (brainSlices, index) {
-            return [brainSlices, brainVolumes[index]];
-        });
-        let shuffled = shuffle(zipped.slice());
-        this.brains = shuffled.map(function (brainSliceAndVolume, index) {
-            return brainSliceAndVolume[0];
-        });
-        this.brainVolumes = shuffled.map(function (brainSliceAndVolume, index) {
-            return brainSliceAndVolume[1];
-        });
-    }
-
     start() {
+        this.indexes = [];
+
         this.controller.onButtonPressed = this._buttonPressed.bind(this);
         this.ticker = new PIXI.ticker.Ticker();
         this.ticker.add(this._tick.bind(this));
@@ -137,23 +128,31 @@ class Player {
             this.loader = null;
         }
 
-        if (this.brains.length > 0) {
-            this.loader = new PIXI.loaders.Loader();
-            let slicesToLoad = this.brains.pop();
-            this.preloadedBrainSliceSprites = [];
-            for (let sliceIdx = 0; sliceIdx < slicesToLoad.length; sliceIdx++) {
-                this.loader.add(slicesToLoad[sliceIdx]);
+        if (this.indexes.length == 0) {
+            for (let i = 0; i < this.brains.length; i++) {
+                this.indexes.push(i);
             }
-
-            const spritesList = this.preloadedBrainSliceSprites;
-            this.loader.load((loader, resources) => {
-                for (let sliceIdx = 0; sliceIdx < slicesToLoad.length; sliceIdx++) {
-                    const sprite = new PIXI.Sprite(resources[slicesToLoad[sliceIdx]].texture);
-                    sprite.position.set((550 - 512) / 2);
-                    spritesList.push(sprite);
-                }
-            });
+            this.indexes = shuffle(this.indexes);
         }
+
+        this.loader = new PIXI.loaders.Loader();
+        const sliceIndexToLoad = this.indexes.pop();
+        const slicesToLoad = this.brains[sliceIndexToLoad];
+        this.preloadedVolume = this.brainVolumes[sliceIndexToLoad];
+        
+        this.preloadedBrainSliceSprites = [];
+        for (let sliceIdx = 0; sliceIdx < slicesToLoad.length; sliceIdx++) {
+            this.loader.add(slicesToLoad[sliceIdx]);
+        }
+
+        const spritesList = this.preloadedBrainSliceSprites;
+        this.loader.load((loader, resources) => {
+            for (let sliceIdx = 0; sliceIdx < slicesToLoad.length; sliceIdx++) {
+                const sprite = new PIXI.Sprite(resources[slicesToLoad[sliceIdx]].texture);
+                sprite.position.set((550 - 512) / 2);
+                spritesList.push(sprite);
+            }
+        });
     }
 
     _applyVolumeLimits() {
@@ -175,18 +174,17 @@ class Player {
         }
         this.brainSliceSprites = this.preloadedBrainSliceSprites;
 
-
-        this.preloadBrainSlices();
-
         this.currentBrainSliceSpriteIndex = null;
         this.currentBrainSliceSpriteHelper = 100;
         this.changeSlice(0);
 
-        this.currentBrainVolume = this.brainVolumes.pop();
+        this.currentBrainVolume = this.preloadedVolume;
         this.volumeSelectionValue = this.currentBrainVolume +
             Math.floor((Math.random() * 3) - 1) * 100 + ((Math.random() * 50) - 25);
         this._applyVolumeLimits();
         this.volumeSelectionText.text = this.volumeSelectionValue.toFixed(2);
+
+        this.preloadBrainSlices();
 
         while (spritesToDestroy.length > 0) {
             const sprite = spritesToDestroy.pop();
@@ -234,6 +232,10 @@ class Player {
 
     makeSelection() {
         if (this.startTime === null) {
+            return;
+        }
+        
+        if (!this.isPreloadReady()) {
             return;
         }
         

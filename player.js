@@ -15,6 +15,8 @@ function shuffle(a) {
 
 PRECACHE_TEXTURE_LIST.push(["slider", "slider.png"]);
 PRECACHE_TEXTURE_LIST.push(["finished_splash", "finished.png"]);
+PRECACHE_TEXTURE_LIST.push(["backdropA", "backdropA.png"]);
+PRECACHE_TEXTURE_LIST.push(["backdropB", "backdropB.png"]);
 
 class Player {
     constructor(index, allBrainSlices, brainVolumes, controller, horse) {
@@ -25,7 +27,13 @@ class Player {
         this.brainVolumes = brainVolumes;
 
         this.mainSprite = new PIXI.Container();
+        
+        this.backdrop = new PIXI.Sprite(
+            index == 0 ? PIXI.utils.TextureCache.backdropA : PIXI.utils.TextureCache.backdropB);
+        this.mainSprite.addChild(this.backdrop);
+        
         this.brainSliceContainer = new PIXI.Container();
+        this.brainSliceContainer.position.set(40, 30);
         this.mainSprite.addChild(this.brainSliceContainer);
 
         this.controller.filterAnalog(0, .25, [
@@ -38,6 +46,7 @@ class Player {
         this.loader = null;
 
         this.finishedSprite = new PIXI.Sprite(PIXI.utils.TextureCache.finished_splash);
+        this.finishedSprite.position.set(this.brainSliceContainer.position.x, this.brainSliceContainer.position.y);
         this.mainSprite.addChild(this.finishedSprite);
 
         this.currentBrainSliceSpriteIndex = null;
@@ -61,9 +70,12 @@ class Player {
         this.volumeSelectionText = new PIXI.Text('1500.00', {
             fontFamily: 'DisposableDroidBB',
             fontSize: 80,
-            fill: 0x000000,
+            fill: 0xFFFFFF,
             align: 'left'
         });
+        this.volumeSelectionText.visible = false;
+        this.volumeSelectionText.position.set(40, 540);
+        this.mainSprite.addChild(this.volumeSelectionText);
     }
 
     start() {
@@ -85,6 +97,8 @@ class Player {
         if (this.horseStart === null) {
             this.horseStart = this.horse.position.x;
         }
+        
+        this.volumeSelectionText.visible = true;
         
         this.score = 0.0;
         this.distanceTraveled = 0;
@@ -151,7 +165,6 @@ class Player {
         this.loader.load((loader, resources) => {
             for (let sliceIdx = 0; sliceIdx < slicesToLoad.length; sliceIdx++) {
                 const sprite = new PIXI.Sprite(resources[slicesToLoad[sliceIdx]].texture);
-                sprite.position.set((550 - 512) / 2);
                 spritesList.push(sprite);
             }
         });
@@ -184,7 +197,7 @@ class Player {
         this.volumeSelectionValue = this.currentBrainVolume +
             Math.floor((Math.random() * 3) - 1) * 100 + ((Math.random() * 50) - 25);
         this._applyVolumeLimits();
-        this.volumeSelectionText.text = this.volumeSelectionValue.toFixed(2);
+        this.volumeSelectionText.text = this.volumeSelectionValue.toFixed(2) + " ml";
 
         this.preloadBrainSlices();
 
@@ -228,7 +241,7 @@ class Player {
         if (speed !== 0) {
             this.volumeSelectionValue += speed;
             this._applyVolumeLimits();
-            this.volumeSelectionText.text = this.volumeSelectionValue.toFixed(2);
+            this.volumeSelectionText.text = this.volumeSelectionValue.toFixed(2) + " ml";
         }
     }
 
@@ -267,12 +280,11 @@ class Player {
             this.finishedSprite.visible = true;
 
             this.score = (60 * 1000) / Math.max(60 * 1000, endTime - this.startTime);
-            this.startTime = null;
-            
             if (this.totalChoices < 15) {
                 const bonus = 1000 - (100 * (this.totalChoices - 5));
                 this.score += bonus;
             }
+            this.startTime = null;
 
             this.volumeSelectionText.text = "Score: " + this.score.toFixed(2);
             

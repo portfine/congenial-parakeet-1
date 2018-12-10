@@ -147,13 +147,11 @@ function initializeGame() {
     drawRaceTrack();
     drawPlayerIdBox();
     drawSeparators();
-    drawTimer();
-    drawVolumeText();
 
     let playerContainer = new PIXI.Container();
-    playerContainer.position.set(0, 400);
-    players[0].mainSprite.position.set(300, 0);
-    players[1].mainSprite.position.set(960, 0);
+    playerContainer.position.set(0, 350);
+    players[0].mainSprite.position.set(250, 0);
+    players[1].mainSprite.position.set(1010, 0);
 
     playerContainer.addChild(players[0].mainSprite, players[1].mainSprite);
     gameScene.addChild(playerContainer);
@@ -251,32 +249,6 @@ function drawSeparators() {
     boxSeparator.position.set(250, 0);
     boxSeparator.lineStyle(5, 0x444444).moveTo(0, 0).lineTo(-110, 220);
     raceComponentsContainer.addChild(raceTrackSeparator, boxSeparator)
-}
-
-function drawTimer() {
-    window.timerText = new PIXI.Text('Time 0.00', {
-        fontFamily: 'DisposableDroidBB',
-        fontSize: 80,
-        fill: 0x000000,
-        align: 'left'
-    });
-    timerText.position.set(450, 250);
-    raceComponentsContainer.addChild(timerText);
-}
-
-function drawVolumeText() {
-
-    let volumesContainer = new PIXI.Container({
-        width: 1920,
-        height: 80
-    });
-
-    volumesContainer.position.set(0, 950);
-    players[0].volumeSelectionText.position.set(450, 0);
-    players[1].volumeSelectionText.position.set(1100, 0);
-
-    volumesContainer.addChild(players[0].volumeSelectionText, players[1].volumeSelectionText);
-    gameScene.addChild(volumesContainer);
 }
 
 function startTimer() {

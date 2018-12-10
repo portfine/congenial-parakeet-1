@@ -74,6 +74,8 @@ class Player {
         this.ticker.add(this._tick.bind(this));
         this.ticker.start();
         
+        this.finishedSprite.visible = false;
+
         this.preloadBrainSlices();
         
         return this;

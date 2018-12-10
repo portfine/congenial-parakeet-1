@@ -135,14 +135,14 @@ function initializeGame() {
 
     let playerContainer = new PIXI.Container();
     playerContainer.position.set(0, 400);
-    players[0].brainSliceContainer.position.set(300, 0);
-    players[1].brainSliceContainer.position.set(960, 0);
+    players[0].mainSprite.position.set(300, 0);
+    players[1].mainSprite.position.set(960, 0);
 
-    playerContainer.addChild(players[0].brainSliceContainer, players[1].brainSliceContainer);
+    playerContainer.addChild(players[0].mainSprite, players[1].mainSprite);
     gameScene.addChild(playerContainer);
 
     players.forEach(function (p) {
-        p.moveToNextBrain();
+        p.startRound();
     });
 }
 

@@ -14,6 +14,7 @@ function shuffle(a) {
 }
 
 PRECACHE_TEXTURE_LIST.push(["slider", "slider.png"]);
+PRECACHE_TEXTURE_LIST.push(["finished_splash", "finished.png"]);
 
 class Player {
     constructor(index, allBrainSlices, brainVolumes, controller, horse) {
@@ -22,7 +23,9 @@ class Player {
 
         this.shuffleBrains(allBrainSlices, brainVolumes);
 
+        this.mainSprite = new PIXI.Container();
         this.brainSliceContainer = new PIXI.Container();
+        this.mainSprite.addChild(this.brainSliceContainer);
 
         this.controller.filterAnalog(0, .25, [
             {dir: [1, 0]},
@@ -32,6 +35,9 @@ class Player {
         ]);
 
         this.loader = null;
+
+        this.finishedSprite = new PIXI.Sprite(PIXI.utils.TextureCache.finished_splash);
+        this.mainSprite.addChild(this.finishedSprite);
 
         this.currentBrainSliceSpriteIndex = null;
         this.currentBrainSliceSpriteHelper = 0.2;
@@ -78,6 +84,12 @@ class Player {
         return this;
     }
 
+    startRound() {
+        this.finishedSprite.visible = false;
+        this.startTime = +new Date();
+        this.moveToNextBrain();
+    }
+    
     _tick(deltaT) {
         function ramp(x) {
             if (x === 0) {
@@ -113,8 +125,6 @@ class Player {
         }
 
         if (this.brains.length > 0) {
-            console.log("Preloading new brains");
-            
             this.loader = new PIXI.loaders.Loader();
             let slicesToLoad = this.brains.pop();
             this.preloadedBrainSliceSprites = [];
@@ -167,6 +177,10 @@ class Player {
     }
 
     changeSlice(speed) {
+        if (this.startTime === null) {
+            return;
+        }
+        
         if (this.brainSliceSprites.length === 0) {
             return;
         }
@@ -185,6 +199,10 @@ class Player {
     }
 
     changeVolume(speed) {
+        if (this.startTime === null) {
+            return;
+        }
+        
         this.volumeSelectionValue += speed;
         if (this.volumeSelectionValue > 2100) {
             this.volumeSelectionValue = 2100;
@@ -198,6 +216,10 @@ class Player {
     }
 
     makeSelection() {
+        if (this.startTime === null) {
+            return;
+        }
+        
         const diff = Math.abs(this.currentBrainVolume - this.volumeSelectionValue);
         if (diff < 200) {
             let distance = Math.pow(200 - diff, 2) / 200;
@@ -213,14 +235,21 @@ class Player {
     }
 
     finish() {
-        this.endTime = new Date().getTime();
+        if (this.startTime !== null) {
+            this.startTime = null;
 
-        this.score = (60 * 1000) / Math.max(60 * 1000, this.endTime - this.startTime);
-        if (this.totalChoices < 15) {
-            const bonus = 1000 - (100 * (this.totalChoices - 5));
-            this.score += bonus;
+            let endTime = +new Date();
+            this.finishedSprite.visible = true;
+
+            this.score = (60 * 1000) / Math.max(60 * 1000, endTime - this.startTime);
+            this.startTime = null;
+            
+            if (this.totalChoices < 15) {
+                const bonus = 1000 - (100 * (this.totalChoices - 5));
+                this.score += bonus;
+            }
+
+            this.volumeSelectionText.text = "Score: " + this.score.toFixed(2);
         }
-
-        this.volumeSelectionText.text = "Score\n" + this.score.toFixed(2);
     }
 }

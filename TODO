@@ -4,12 +4,12 @@ TODO:
  - Fix the min-max checks when generating new start volumes ✔
  - Loop over dataset multiple times ✔
  - Background ✔
-
- - Explicit timeout
+ - Explicit timeout ✔
  
  - Animate horses
- - Finished first trophy
 
  - Instructions
  - Title page
  - Login with both controllers
+
+ - Finished first trophy

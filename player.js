@@ -15,6 +15,7 @@ function shuffle(a) {
 
 PRECACHE_TEXTURE_LIST.push(["slider", "slider.png"]);
 PRECACHE_TEXTURE_LIST.push(["finished_splash", "finished.png"]);
+PRECACHE_TEXTURE_LIST.push(["progressbar", "progressbar.png"]);
 PRECACHE_TEXTURE_LIST.push(["backdropA", "backdropA.png"]);
 PRECACHE_TEXTURE_LIST.push(["backdropB", "backdropB.png"]);
 
@@ -65,6 +66,14 @@ class Player {
         this.startTime = null;
 
         this.onFinished = null;
+
+        this.NEW_IMAGE_WAIT_TIMEOUT = 5; // seconds
+        this.waitTimeout = 0;
+        this.waitProgressBar = new PIXI.Sprite(PIXI.utils.TextureCache.progressbar);
+        this.waitProgressBar.position.set(45, 650 - 98);
+        this.waitProgressBar.scale.set(1, 50);
+        this.waitProgressBar.visible = false;
+        this.mainSprite.addChild(this.waitProgressBar);
 
         this.volumeSelectionValue = 1500.;
         this.volumeSelectionText = new PIXI.Text('1500.00', {
@@ -124,6 +133,18 @@ class Player {
             const controller = this.controller.state;
             this.changeSlice(ramp(controller.axes[1]) * timeDeltaT);
             this.changeVolume(ramp(controller.axes[0]) * timeDeltaT);
+        }
+        
+        this.waitTimeout -= timeDeltaT;
+        if (this.waitTimeout > 0) {
+            this.waitProgressBar.visible = true;
+            this.waitProgressBar.scale.x = 560 * (this.NEW_IMAGE_WAIT_TIMEOUT - this.waitTimeout) / this.NEW_IMAGE_WAIT_TIMEOUT;
+        } else {
+            this.waitProgressBar.scale.x = 560;
+            if (this.waitTimeout < -0.45) {
+                this.waitProgressBar.visible = !this.waitProgressBar.visible;
+                this.waitTimeout = 0;
+            }
         }
     }
 
@@ -198,6 +219,8 @@ class Player {
             Math.floor((Math.random() * 3) - 1) * 100 + ((Math.random() * 50) - 25);
         this._applyVolumeLimits();
         this.volumeSelectionText.text = this.volumeSelectionValue.toFixed(2) + " ml";
+        
+        this.waitTimeout = this.NEW_IMAGE_WAIT_TIMEOUT;
 
         this.preloadBrainSlices();
 
@@ -247,6 +270,10 @@ class Player {
 
     makeSelection() {
         if (this.startTime === null) {
+            return;
+        }
+        
+        if (this.waitTimeout > 0) {
             return;
         }
         

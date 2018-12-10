@@ -16,10 +16,11 @@ function shuffle(a) {
 PRECACHE_TEXTURE_LIST.push(["slider", "slider.png"]);
 
 class Player {
-    constructor(index, allBrainSlices, controller) {
+    constructor(index, allBrainSlices, brainVolumes, controller) {
         this.index = index;
         this.controller = controller;
-        this.brains = shuffle(allBrainSlices.slice());
+
+        this.shuffleBrains(allBrainSlices, brainVolumes);
 
         this.brainSliceContainer = new PIXI.Container();
 
@@ -36,10 +37,14 @@ class Player {
         this.currentBrainSliceSpriteIndex = null;
         this.currentBrainSliceSpriteHelper = 0.2;
 
+        this.currentBrainVolume = null;
         this.brainSliceSprites = [];
         this.preloadedBrainSliceSprites = [];
         this.horse = null;
         this.score = 0.;
+        this.distanceTraveled = 0;
+        this.totalChoices = 0;
+        this.startTime = null;
 
         this.volumeSelectionValue = 1500.;
         this.volumeSelectionText = new PIXI.Text('1500.00', {
@@ -50,9 +55,21 @@ class Player {
         });
     }
 
+    shuffleBrains(allBrainSlices, brainVolumes) {
+        let zipped = allBrainSlices.map(function (brainSlices, index) {
+            return [brainSlices, brainVolumes[index]];
+        });
+        let shuffled = shuffle(zipped.slice());
+        this.brains = shuffled.map(function (brainSliceAndVolume, index) {
+            return brainSliceAndVolume[0];
+        });
+        this.brainVolumes = shuffled.map(function (brainSliceAndVolume, index) {
+            return brainSliceAndVolume[1];
+        });
+    }
+
     start() {
         this.controller.onButtonPressed = this._buttonPressed.bind(this);
-
         this.ticker = new PIXI.ticker.Ticker();
         this.ticker.add(this._tick.bind(this));
         this.ticker.start();
@@ -83,7 +100,7 @@ class Player {
 
     _buttonPressed(controller, button) {
         if (button === Gamepad.StandardButtons[0]) {
-            this.moveToNextBrain();
+            this.makeSelection();
         }
     }
 
@@ -130,6 +147,12 @@ class Player {
         this.currentBrainSliceSpriteHelper = 100;
         this.changeSlice(0);
 
+        this.currentBrainVolume = this.brainVolumes.pop();
+        console.log(this.currentBrainVolume);
+        this.volumeSelectionValue = this.currentBrainVolume +
+            Math.floor((Math.random() * 3) - 1) * 100 + ((Math.random() * 50) - 25);
+        this.volumeSelectionText.text = this.volumeSelectionValue.toFixed(2);
+
         while (spritesToDestroy.length > 0) {
             const sprite = spritesToDestroy.pop();
             this.brainSliceContainer.removeChild(sprite);
@@ -162,12 +185,40 @@ class Player {
         this.volumeSelectionValue += speed;
         if (this.volumeSelectionValue > 2100) {
             this.volumeSelectionValue = 2100;
-            speed = 0;
+            speed = null;
         } else if (this.volumeSelectionValue < 900) {
             this.volumeSelectionValue = 900;
-            speed = 0;
+            speed = null;
         }
         if (speed !== 0)
             this.volumeSelectionText.text = this.volumeSelectionValue.toFixed(2)
+    }
+
+    makeSelection() {
+        const diff = Math.abs(this.currentBrainVolume - this.volumeSelectionValue);
+        if (diff < 200) {
+            let distance = Math.pow(200 - diff, 2) / 200;
+            this.horse.position.x += distance;
+            this.distanceTraveled += distance;
+        }
+        this.totalChoices += 1;
+        if (this.distanceTraveled >= 900) {
+            this.finish();
+        } else {
+            this.moveToNextBrain();
+        }
+    }
+
+    finish() {
+        this.endTime = new Date().getTime();
+        // console.assert(this.startTime != null);
+
+        this.score = 1000 / (this.endTime - this.startTime);
+        if (this.totalChoices < 15) {
+            const bonus = 1000 - (100 * (this.totalChoices - 5));
+            this.score += bonus;
+        }
+
+        this.volumeSelectionText.text = "Score\n" + this.score.toFixed(2);
     }
 }

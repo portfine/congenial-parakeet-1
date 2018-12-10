@@ -3,9 +3,12 @@ TODO:
  - Reset ✔
  - Fix the min-max checks when generating new start volumes ✔
  - Loop over dataset multiple times ✔
+ - Background ✔
 
- - Background
+ - Explicit timeout
+ 
  - Animate horses
+ - Finished first trophy
 
  - Instructions
  - Title page

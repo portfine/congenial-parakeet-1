@@ -256,7 +256,7 @@ class Player {
         
         const diff = Math.abs(this.currentBrainVolume - this.volumeSelectionValue);
         if (diff < 200) {
-            let distance = Math.pow(200 - diff, 2) / 200;
+            let distance = Math.pow(100 - diff, 2) / 100;
             this.distanceTraveled += distance;
             this.horse.position.x = this.horseStart + this.distanceTraveled;
         }
@@ -279,14 +279,16 @@ class Player {
             let endTime = +new Date();
             this.finishedSprite.visible = true;
 
-            this.score = (60 * 1000) / Math.max(60 * 1000, endTime - this.startTime);
+            this.score = this.totalChoices;
+            
+            /*(60 * 1000) / Math.max(60 * 1000, endTime - this.startTime);
             if (this.totalChoices < 15) {
                 const bonus = 1000 - (100 * (this.totalChoices - 5));
                 this.score += bonus;
-            }
+            }*/
             this.startTime = null;
 
-            this.volumeSelectionText.text = "Score: " + this.score.toFixed(2);
+            this.volumeSelectionText.text = "Guesses: " + this.totalChoices;
             
             if (this.onFinished) {
                 this.onFinished(this);

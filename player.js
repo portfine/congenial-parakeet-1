@@ -46,6 +46,7 @@ class Player {
         this.brainSliceSprites = [];
         this.preloadedBrainSliceSprites = [];
         this.horse = horse;
+        this.horseStart = null;
         
         this.score = 0.0;
         this.distanceTraveled = 0;
@@ -87,9 +88,14 @@ class Player {
     }
 
     startRound() {
+        if (this.horseStart === null) {
+            this.horseStart = this.horse.position.x;
+        }
+        
         this.score = 0.0;
         this.distanceTraveled = 0;
         this.totalChoices = 0;
+        this.horse.position.x = this.horseStart + this.distanceTraveled;
         
         this.finishedSprite.visible = false;
         this.startTime = +new Date();
@@ -229,8 +235,8 @@ class Player {
         const diff = Math.abs(this.currentBrainVolume - this.volumeSelectionValue);
         if (diff < 200) {
             let distance = Math.pow(200 - diff, 2) / 200;
-            this.horse.position.x += distance;
             this.distanceTraveled += distance;
+            this.horse.position.x = this.horseStart + this.distanceTraveled;
         }
         this.totalChoices += 1;
         if (this.distanceTraveled >= 900) {

@@ -66,7 +66,7 @@ class Controller {
                         const projection = filter.projections[fi];
                         const pValue = vec2DotProduct(
                             projection.dir,
-                            normVec)
+                            normVec);
                         if (pValue > projection.threshold) {
                             if (pValue > maxI) {
                                 maxI = pValue;
@@ -123,14 +123,14 @@ class Controller {
     }
     
     connected(device) {
-        if (device.index == this.index) {
+        if (device.index === this.index) {
             this.isConnected = null;
             this._saveState(device);
         }
     }
     
     disconnected(device) {
-        if (device.index == this.index) {
+        if (device.index === this.index) {
             this.state = null;
             this.isConnected = false;
             this.cb(this.onDisconnected);
@@ -138,20 +138,20 @@ class Controller {
     }
     
     axisChanged(axis) {
-        if (axis.gamepad.index == this.index) {
+        if (axis.gamepad.index === this.index) {
             this._saveState(axis.gamepad);
         }
     }
     
     press(button) {
-        if (button.gamepad.index == this.index) {
+        if (button.gamepad.index === this.index) {
             this._saveState(button.gamepad);
             this.cb1(this.onButtonPressed, button.control);
         }
     }
 
     release(button) {
-        if (button.gamepad.index == this.index) {
+        if (button.gamepad.index === this.index) {
             this._saveState(button.gamepad);
             this.cb1(this.onButtonReleased, button.control);
         }

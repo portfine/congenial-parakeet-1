@@ -1,4 +1,3 @@
-
 /** source: https://stackoverflow.com/questions/6274339/how-can-i-shuffle-an-array/6274398
  * Shuffles array in place.
  * @param {Array} a items An array containing the items.
@@ -23,10 +22,6 @@ class Player {
         this.brains = shuffle(allBrainSlices.slice());
 
         this.brainSliceContainer = new PIXI.Container();
-        
-        this.slider = new PIXI.Sprite(PIXI.utils.TextureCache["slider"]);
-        this.slider.position.set(0, 0);
-        this.brainSliceContainer.addChild(this.slider);
 
         this.controllerTimer = 0;
         this.controller.filterAnalog(0, .25, [
@@ -45,31 +40,40 @@ class Player {
         this.preloadedBrainSliceSprites = [];
         this.horse = null;
         this.score = 0.;
+
+        this.volumeSelectionValue = 1500.;
+        this.volumeSelectionText = new PIXI.Text('1500.00', {
+            fontFamily: 'DisposableDroidBB',
+            fontSize: 80,
+            fill: 0x000000,
+            align: 'left'
+        });
     }
 
     start() {
         this.controller.onButtonPressed = this._buttonPressed.bind(this);
-        
+
         this.ticker = new PIXI.ticker.Ticker();
         this.ticker.add(this._tick.bind(this));
         this.ticker.start();
         return this;
     }
-    
+
     _tick(deltaT) {
         function ramp(x) {
-            if (x == 0) {
+            if (x === 0) {
                 return 0;
             }
             const sign = x > 0 ? 1 : -1;
-            return 150 * Math.pow((Math.abs(x) - .25) / .75, 4) * sign; 
+            return 150 * Math.pow((Math.abs(x) - .25) / .75, 4) * sign;
         }
-        
+
         const timeDeltaT = deltaT * (1 / 60);
         this.controllerTimer += timeDeltaT;
         if (this.controller.state !== null) {
             const controller = this.controller.state;
             this.changeSlice(ramp(controller.axes[1]) * timeDeltaT);
+            this.changeVolume(ramp(controller.axes[0]) * timeDeltaT);
 
             if (this.controllerTimer > 0.05) {
                 this.controllerTimer -= 0.05;
@@ -88,7 +92,7 @@ class Player {
             this.loader.destroy();
             this.loader = null;
         }
-        
+
         if (this.brains.length > 0) {
             this.loader = new PIXI.loaders.Loader();
             let slicesToLoad = this.brains.pop();
@@ -96,7 +100,7 @@ class Player {
             for (let sliceIdx = 0; sliceIdx < slicesToLoad.length; sliceIdx++) {
                 this.loader.add(slicesToLoad[sliceIdx]);
             }
-            
+
             const spritesList = this.preloadedBrainSliceSprites;
             this.loader.load((loader, resources) => {
                 for (let sliceIdx = 0; sliceIdx < slicesToLoad.length; sliceIdx++) {
@@ -110,22 +114,22 @@ class Player {
 
     moveToNextBrain() {
         let spritesToDestroy = this.brainSliceSprites;
-        
-        if ((this.preloadedBrainSliceSprites !== null) && 
-                (this.loader !== null) && 
-                (this.preloadedBrainSliceSprites.length == 0)) {
+
+        if ((this.preloadedBrainSliceSprites !== null) &&
+            (this.loader !== null) &&
+            (this.preloadedBrainSliceSprites.length === 0)) {
             this.loader.onComplete.add(this.moveToNextBrain.bind(this));
             return;
         }
         this.brainSliceSprites = this.preloadedBrainSliceSprites;
-        
-        
+
+
         this.preloadBrainSlices();
-        
+
         this.currentBrainSliceSpriteIndex = null;
         this.currentBrainSliceSpriteHelper = 100;
         this.changeSlice(0);
-        
+
         while (spritesToDestroy.length > 0) {
             const sprite = spritesToDestroy.pop();
             this.brainSliceContainer.removeChild(sprite);
@@ -137,10 +141,10 @@ class Player {
     }
 
     changeSlice(speed) {
-        if (this.brainSliceSprites.length == 0) {
+        if (this.brainSliceSprites.length === 0) {
             return;
         }
-        
+
         // very hacky implementation to slide between stuff..
         this.currentBrainSliceSpriteHelper += speed + this.brainSliceSprites.length;
         this.currentBrainSliceSpriteHelper %= this.brainSliceSprites.length;
@@ -153,5 +157,17 @@ class Player {
             this.brainSliceContainer.addChild(this.brainSliceSprites[newBrainSliceSpriteIndex]);
         }
     }
-}
 
+    changeVolume(speed) {
+        this.volumeSelectionValue += speed;
+        if (this.volumeSelectionValue > 2100) {
+            this.volumeSelectionValue = 2100;
+            speed = 0;
+        } else if (this.volumeSelectionValue < 900) {
+            this.volumeSelectionValue = 900;
+            speed = 0;
+        }
+        if (speed !== 0)
+            this.volumeSelectionText.text = this.volumeSelectionValue.toFixed(2)
+    }
+}

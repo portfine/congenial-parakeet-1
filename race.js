@@ -40,7 +40,7 @@ $(document).ready(function () {
     for (let i = 0; i < PRECACHE_TEXTURE_LIST.length; i++) {
 		const item = PRECACHE_TEXTURE_LIST[i];
 		console.log("Loading: " + item);
-		if ((typeof item == "string") || (item.length == 1)) {
+		if ((typeof item == "string") || (item.length === 1)) {
 			loader.add(item);
 		} else {
 			loader.add(item[0], item[1]);
@@ -82,6 +82,7 @@ function drawCanvas() {
     drawPlayerIdBox();
     drawSeparators();
     drawTimer();
+    drawVolumeText();
     drawBrainSliders();
 }
 
@@ -179,16 +180,31 @@ function drawBrainSliders() {
         width: 1920,
         height: 600,
     });
-    brainSlidersContainer.position.set(0, 450);
-    players[0].brainSliceContainer.position.set(350, 0);
-    players[1].brainSliceContainer.position.set(1020, 0);
+    brainSlidersContainer.position.set(0, 400);
+    players[0].brainSliceContainer.position.set(300, 0);
+    players[1].brainSliceContainer.position.set(960, 0);
     
     players.forEach(function(p) {
 		p.preloadBrainSlices();
 		p.moveToNextBrain();
 	});
     brainSlidersContainer.addChild(players[0].brainSliceContainer, players[1].brainSliceContainer);
-    window.stage.addChild(brainSlidersContainer)
+    window.stage.addChild(brainSlidersContainer);
+}
+
+function drawVolumeText() {
+
+    let volumesContainer = new PIXI.Container({
+        width: 1920,
+        height: 80
+    });
+
+    volumesContainer.position.set(0,950);
+    players[0].volumeSelectionText.position.set(450,0);
+    players[1].volumeSelectionText.position.set(1100,0);
+
+    volumesContainer.addChild(players[0].volumeSelectionText, players[1].volumeSelectionText);
+    window.stage.addChild(volumesContainer);
 }
 
 function startTimer() {

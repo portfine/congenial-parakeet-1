@@ -14,6 +14,7 @@ function shuffle(a) {
     return a;
 }
 
+PRECACHE_TEXTURE_LIST.push(["slider", "slider.png"]);
 
 class Player {
     constructor(index, allBrainSlices, controller) {
@@ -21,10 +22,11 @@ class Player {
         this.controller = controller;
         this.brains = shuffle(allBrainSlices.slice());
 
-        this.brainSliceContainer = new PIXI.Container({
-            width: 550,
-            height: 550,
-        });
+        this.brainSliceContainer = new PIXI.Container();
+        
+        this.slider = new PIXI.Sprite(PIXI.utils.TextureCache["slider"]);
+        this.slider.position.set(0, 0);
+        this.brainSliceContainer.addChild(this.slider);
 
         this.controllerTimer = 0;
         this.controller.filterAnalog(0, .25, [
@@ -99,6 +101,7 @@ class Player {
             this.loader.load((loader, resources) => {
                 for (let sliceIdx = 0; sliceIdx < slicesToLoad.length; sliceIdx++) {
                     const sprite = new PIXI.Sprite(resources[slicesToLoad[sliceIdx]].texture);
+                    sprite.position.set((550 - 512) / 2);
                     spritesList.push(sprite);
                 }
             });
@@ -125,6 +128,7 @@ class Player {
         
         while (spritesToDestroy.length > 0) {
             const sprite = spritesToDestroy.pop();
+            this.brainSliceContainer.removeChild(sprite);
             const texture = sprite.texture;
             sprite.destroy();
             PIXI.Texture.removeFromCache(texture);
@@ -142,9 +146,11 @@ class Player {
         this.currentBrainSliceSpriteHelper %= this.brainSliceSprites.length;
         const newBrainSliceSpriteIndex = Math.floor(this.currentBrainSliceSpriteHelper);
         if (newBrainSliceSpriteIndex !== this.currentBrainSliceSpriteIndex) {
-            this.brainSliceContainer.removeChildren();
+            if (this.currentBrainSliceSpriteIndex !== null) {
+                this.brainSliceContainer.removeChild(this.brainSliceSprites[this.currentBrainSliceSpriteIndex]);
+            }
             this.currentBrainSliceSpriteIndex = newBrainSliceSpriteIndex;
-            return this.brainSliceContainer.addChild(this.brainSliceSprites[newBrainSliceSpriteIndex]);
+            this.brainSliceContainer.addChild(this.brainSliceSprites[newBrainSliceSpriteIndex]);
         }
     }
 }

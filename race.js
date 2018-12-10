@@ -19,6 +19,8 @@ const allBrainSlices = [];
 	}
 })();
 
+PRECACHE_TEXTURE_LIST.push(["horse_a", "HorseA.png"]);
+PRECACHE_TEXTURE_LIST.push(["horse_b", "HorseB.png"]);
 
 $(document).ready(function () {
     app = new PIXI.Application({
@@ -33,7 +35,17 @@ $(document).ready(function () {
     adaptRenderSize();
     window.addEventListener("resize", adaptRenderSize);
 
-    let loader = PIXI.loader.add("horse_a", "HorseA.png").add("horse_b", "HorseB.png");
+    let loader = PIXI.loader;
+    PIXI.loader.onComplete.add(drawCanvas);
+    for (let i = 0; i < PRECACHE_TEXTURE_LIST.length; i++) {
+		const item = PRECACHE_TEXTURE_LIST[i];
+		console.log("Loading: " + item);
+		if ((typeof item == "string") || (item.length == 1)) {
+			loader.add(item);
+		} else {
+			loader.add(item[0], item[1]);
+		}
+	}
     loader.load();
 
     window.players = [
@@ -43,7 +55,6 @@ $(document).ready(function () {
 
     players[0].start();
     players[1].start();
-    PIXI.loader.onComplete.add(drawCanvas);
 });
 
 function adaptRenderSize() {

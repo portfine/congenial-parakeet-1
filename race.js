@@ -1,4 +1,5 @@
 let app = null;
+let gameScene = null;
 
 /*
 let allBrainSlices = [
@@ -9,7 +10,7 @@ let allBrainSlices = [
 ];
 */
 const allBrainSlices = [];
-const brainVolumes = [1087.048677, 1335.564177, 1578.25995, 1401.037177, 1415.212998, 1307.620724, 1172.912932, 1444.757523, 1601.020309, 1244.563513, 1413.857312, 1863.443433, 1284.793224, 1378.54031, 1314.437878, 1350.745618, 1457.900493, 1335.419308, 1357.885584, 1368.743004, 1301.977369, 1446.05875, 1691.799927, 1489.06232, 1260.307005, 1509.293762, 1509.181313, 1480.239187, 1741.292295, 1604.973656, 1233.137432, 1270.471055, 1322.238157, 1368.768428, 1399.000319, 1161.335305, 1525.895067, 1599.061756, 1318.584255, 1414.670646, 1367.181801, 1490.45032, 1764.850127, 1356.810372, 1362.998716, 1305.073504, 1305.39506, 1503.858961, 1546.127103, 967.3210232, 1358.227371, 1245.388366, 1274.909302, 1364.656683, 1687.228365, 1348.538149, 1358.984877, 1520.199499, 1497.540558, 1618.429939, 1449.653306, 1295.713179, 1516.919041, 1583.073544, 1582.814592, 1608.886094, 1605.805059, 1672.033297, 1296.029968, 1532.525951, 1578.915513, 1298.200578, 1295.910892, 1676.326606, 1454.414111, 1623.297955, 1407.474748, 1570.795959, 1564.572064, 1308.666536, 1462.712793, 1441.971727, 1343.430223, 1458.695933, 1433.940133, 1342.906187, 1292.255289, 1576.317391, 1286.114982, 1284.082284, 1313.054194, 1305.284599, 1460.418748, 1293.122045, 1410.116233, 1148.042567, 1621.336294, 1250.56888, 1594.312969, 1505.273261];
+
 (function () {
     for (let i = 1; i <= 100; i++) {
         const img = [];
@@ -32,12 +33,11 @@ $(document).ready(function () {
     });
     document.body.appendChild(app.view);
 
-    window.stage = app.stage;
     adaptRenderSize();
     window.addEventListener("resize", adaptRenderSize);
 
     let loader = PIXI.loader;
-    PIXI.loader.onComplete.add(drawCanvas);
+    PIXI.loader.onComplete.add(preloadPlayers);
     for (let i = 0; i < PRECACHE_TEXTURE_LIST.length; i++) {
         const item = PRECACHE_TEXTURE_LIST[i];
         console.log("Loading: " + item);
@@ -48,14 +48,6 @@ $(document).ready(function () {
         }
     }
     loader.load();
-
-    window.players = [
-        new Player(0, allBrainSlices, brainVolumes, (new Controller(0)).bindEvents()),
-        new Player(1, allBrainSlices, brainVolumes, (new Controller(1)).bindEvents())
-    ];
-
-    players[0].start();
-    players[1].start();
 });
 
 function adaptRenderSize() {
@@ -72,22 +64,9 @@ function adaptRenderSize() {
     app.stage.scale.y = scale;
 }
 
-function drawCanvas() {
-    $("#loading").hide();
+function preloadPlayers() {
+    gameScene = new PIXI.Container();
 
-    console.log("all loaded!");
-
-    drawRaceComponentsContainer();
-    drawHorses();
-    drawRaceTrack();
-    drawPlayerIdBox();
-    drawSeparators();
-    drawTimer();
-    drawVolumeText();
-    drawBrainSliders();
-}
-
-function drawHorses() {
     const horseATex = PIXI.utils.TextureCache["horse_a"];
     const horseBTex = PIXI.utils.TextureCache["horse_b"];
 
@@ -109,8 +88,62 @@ function drawHorses() {
     horseBSprite.position.x = -15;
     horseBSprite.position.y = 133;
 
-    players[0].horse = horseASprite;
-    players[1].horse = horseBSprite;
+    window.players = [
+        (new Player(
+            0,
+            allBrainSlices,
+            brainVolumes,
+            (new Controller(0)).bindEvents(),
+            horseASprite)
+        ).start(),
+        (new Player(
+            1,
+            allBrainSlices,
+            brainVolumes,
+            (new Controller(1)).bindEvents(),
+            horseBSprite)
+        ).start(),
+    ];
+    
+    
+    let interval = window.setInterval(function() {
+        let allReady = true;
+        window.players.forEach(function(pl) {
+            if (!pl.isPreloadReady()) {
+                allReady = false;
+            }
+        });
+        if (allReady) {
+            window.clearInterval(interval);
+            initializeGame();
+        }
+    }, 500);
+}
+
+function initializeGame() {
+    $("#loading").hide();
+    console.log("all loaded!");
+
+    app.stage.addChild(gameScene);
+
+    drawRaceComponentsContainer();
+    drawRaceTrack();
+    drawPlayerIdBox();
+    drawSeparators();
+    drawTimer();
+    drawVolumeText();
+
+    let playerContainer = new PIXI.Container();
+    playerContainer.position.set(0, 400);
+    players[0].brainSliceContainer.position.set(300, 0);
+    players[1].brainSliceContainer.position.set(960, 0);
+
+    playerContainer.addChild(players[0].brainSliceContainer, players[1].brainSliceContainer);
+    gameScene.addChild(playerContainer);
+
+    players.forEach(function (p) {
+        p.moveToNextBrain();
+    });
 }
 
 function drawRaceComponentsContainer() {
@@ -119,7 +152,8 @@ function drawRaceComponentsContainer() {
         height: 330
     });
     raceComponentsContainer.position.set(300, 50);
-    window.stage.addChild(raceComponentsContainer);
+    
+    gameScene.addChild(raceComponentsContainer);
 }
 
 function drawRaceTrack() {
@@ -179,23 +213,6 @@ function drawTimer() {
     raceComponentsContainer.addChild(timerText);
 }
 
-function drawBrainSliders() {
-    let brainSlidersContainer = new PIXI.Container({
-        width: 1920,
-        height: 600,
-    });
-    brainSlidersContainer.position.set(0, 400);
-    players[0].brainSliceContainer.position.set(300, 0);
-    players[1].brainSliceContainer.position.set(960, 0);
-
-    players.forEach(function (p) {
-        p.preloadBrainSlices();
-        p.moveToNextBrain();
-    });
-    brainSlidersContainer.addChild(players[0].brainSliceContainer, players[1].brainSliceContainer);
-    window.stage.addChild(brainSlidersContainer);
-}
-
 function drawVolumeText() {
 
     let volumesContainer = new PIXI.Container({
@@ -208,7 +225,7 @@ function drawVolumeText() {
     players[1].volumeSelectionText.position.set(1100, 0);
 
     volumesContainer.addChild(players[0].volumeSelectionText, players[1].volumeSelectionText);
-    window.stage.addChild(volumesContainer);
+    gameScene.addChild(volumesContainer);
 }
 
 function startTimer() {

@@ -16,7 +16,7 @@ function shuffle(a) {
 PRECACHE_TEXTURE_LIST.push(["slider", "slider.png"]);
 
 class Player {
-    constructor(index, allBrainSlices, brainVolumes, controller) {
+    constructor(index, allBrainSlices, brainVolumes, controller, horse) {
         this.index = index;
         this.controller = controller;
 
@@ -24,7 +24,6 @@ class Player {
 
         this.brainSliceContainer = new PIXI.Container();
 
-        this.controllerTimer = 0;
         this.controller.filterAnalog(0, .25, [
             {dir: [1, 0]},
             {dir: [0, 1]},
@@ -40,7 +39,7 @@ class Player {
         this.currentBrainVolume = null;
         this.brainSliceSprites = [];
         this.preloadedBrainSliceSprites = [];
-        this.horse = null;
+        this.horse = horse;
         this.score = 0.;
         this.distanceTraveled = 0;
         this.totalChoices = 0;
@@ -73,6 +72,9 @@ class Player {
         this.ticker = new PIXI.ticker.Ticker();
         this.ticker.add(this._tick.bind(this));
         this.ticker.start();
+        
+        this.preloadBrainSlices();
+        
         return this;
     }
 
@@ -86,15 +88,10 @@ class Player {
         }
 
         const timeDeltaT = deltaT * (1 / 60);
-        this.controllerTimer += timeDeltaT;
         if (this.controller.state !== null) {
             const controller = this.controller.state;
             this.changeSlice(ramp(controller.axes[1]) * timeDeltaT);
             this.changeVolume(ramp(controller.axes[0]) * timeDeltaT);
-
-            if (this.controllerTimer > 0.05) {
-                this.controllerTimer -= 0.05;
-            }
         }
     }
 
@@ -104,6 +101,11 @@ class Player {
         }
     }
 
+    isPreloadReady() {
+        return (this.preloadedBrainSliceSprites !== null) && 
+            (this.preloadedBrainSliceSprites.length > 0);
+    }
+
     preloadBrainSlices() {
         if (this.loader !== null) {
             this.loader.destroy();
@@ -111,6 +113,8 @@ class Player {
         }
 
         if (this.brains.length > 0) {
+            console.log("Preloading new brains");
+            
             this.loader = new PIXI.loaders.Loader();
             let slicesToLoad = this.brains.pop();
             this.preloadedBrainSliceSprites = [];
@@ -148,7 +152,6 @@ class Player {
         this.changeSlice(0);
 
         this.currentBrainVolume = this.brainVolumes.pop();
-        console.log(this.currentBrainVolume);
         this.volumeSelectionValue = this.currentBrainVolume +
             Math.floor((Math.random() * 3) - 1) * 100 + ((Math.random() * 50) - 25);
         this.volumeSelectionText.text = this.volumeSelectionValue.toFixed(2);
@@ -211,9 +214,8 @@ class Player {
 
     finish() {
         this.endTime = new Date().getTime();
-        // console.assert(this.startTime != null);
 
-        this.score = 1000 / (this.endTime - this.startTime);
+        this.score = (60 * 1000) / Math.max(60 * 1000, this.endTime - this.startTime);
         if (this.totalChoices < 15) {
             const bonus = 1000 - (100 * (this.totalChoices - 5));
             this.score += bonus;

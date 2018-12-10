@@ -16,6 +16,7 @@ const allBrainSlices = [];
 
 PRECACHE_TEXTURE_LIST.push(["horse_a", "HorseA.png"]);
 PRECACHE_TEXTURE_LIST.push(["horse_b", "HorseB.png"]);
+PRECACHE_TEXTURE_LIST.push(["bgtile", "bgtiles.jpg"]);
 
 function lookupButton(name) {
     for (let i = 0; i < Gamepad.StandardButtons.length; i++) {
@@ -68,6 +69,13 @@ function adaptRenderSize() {
 
 function preloadPlayers() {
     gameScene = new PIXI.Container();
+    
+    const bgsprite = new PIXI.extras.TilingSprite(
+        PIXI.utils.TextureCache.bgtile,
+        1920, 1080
+    );
+    app.stage.addChild(bgsprite);
+    
 
     const horseATex = PIXI.utils.TextureCache["horse_a"];
     const horseBTex = PIXI.utils.TextureCache["horse_b"];

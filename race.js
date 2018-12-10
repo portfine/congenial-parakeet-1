@@ -112,6 +112,8 @@ function preloadPlayers() {
         ).start(),
     ];
     
+    window.players[0].onFinished = checkGameFinished;
+    window.players[1].onFinished = checkGameFinished;
     
     let interval = window.setInterval(function() {
         let allReady = true;
@@ -152,6 +154,18 @@ function initializeGame() {
     startNewRoundSplash.setVisible(true);
 
     PIXI.ticker.shared.add(testResetGame);
+}
+
+function checkGameFinished() {
+    let allFinished = true;
+    for (let i = 0; i < window.players.length; i++) {
+        if (!window.players[i].hasFinished()) {
+            allFinished = false;
+        }
+    }
+    if (allFinished) {
+        startNewRoundSplash.setVisible(true);
+    }
 }
 
 const RESET_BUTTON_INDEX = 7;

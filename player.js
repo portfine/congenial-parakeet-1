@@ -53,6 +53,7 @@ class Player {
         this.totalChoices = 0;
         this.startTime = null;
 
+        this.onFinished = null;
 
         this.volumeSelectionValue = 1500.;
         this.volumeSelectionText = new PIXI.Text('1500.00', {
@@ -246,6 +247,10 @@ class Player {
         }
     }
 
+    hasFinished() {
+        return this.startTime === null;
+    }
+
     finish() {
         if (this.startTime !== null) {
             this.startTime = null;
@@ -262,6 +267,10 @@ class Player {
             }
 
             this.volumeSelectionText.text = "Score: " + this.score.toFixed(2);
+            
+            if (this.onFinished) {
+                this.onFinished(this);
+            }
         }
     }
 }

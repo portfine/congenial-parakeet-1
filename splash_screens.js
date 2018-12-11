@@ -58,6 +58,8 @@ class StartNewRoundSplash {
         }
         if (!this.isVisible) {
             this.initTimer = -20;
+            this.titleSprite.scale.set(0, 0);
+            this.starburstSprite.scale.set(0, 0);
         } else {
             this.initTimer += timeDeltaT;
             if (this.initTimer > 0.75) this.initTimer = 0.75;

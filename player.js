@@ -283,7 +283,7 @@ class Player {
         
         const diff = Math.abs(this.currentBrainVolume - this.volumeSelectionValue);
         if (diff < 200) {
-            let distance = Math.pow(100 - diff, 2) / 100;
+            let distance = Math.pow(200 - diff, 2) / 200;
             this.distanceTraveled += distance;
             this.horse.position.x = this.horseStart + this.distanceTraveled;
         }

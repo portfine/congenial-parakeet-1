@@ -19,7 +19,7 @@ class StartNewRoundSplash {
         this.starburstCenteredSprite.position.set(
             -beamsFrame.width / 2, -beamsFrame.height / 2);
         this.starburstSprite.position.set(1920 / 2, 400);
-        this.starburstSprite.scale.set(8, 5);
+        this.starburstSprite.scale.set(0, 0);
         this.starburstSprite.addChild(this.starburstCenteredSprite);
 
         this.titleSprite = new PIXI.Container();
@@ -27,6 +27,7 @@ class StartNewRoundSplash {
         const titleFrame = PIXI.utils.TextureCache.title_splash.frame;
         titleOffsetSprite.position.set(-titleFrame.width / 2, -titleFrame.height / 2);
         this.titleSprite.addChild(titleOffsetSprite);
+        this.titleSprite.scale.set(0, 0);
         this.titleSprite.position.set(1920 / 2, 400);
         
         this.isVisible = false;
@@ -56,7 +57,7 @@ class StartNewRoundSplash {
             this.startnewFlasher.visible = !this.startnewFlasher.visible;
         }
         if (!this.isVisible) {
-            this.initTimer = -10;
+            this.initTimer = -20;
         } else {
             this.initTimer += timeDeltaT;
             if (this.initTimer > 0.75) this.initTimer = 0.75;
